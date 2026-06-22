@@ -2,7 +2,7 @@
 
 **Cross-browser bookmark sync** — keep bookmarks in sync across Chrome, Firefox, Edge, and Safari using storage **you** control.
 
-Version **1.1.2** · [Changelog](docs/CHANGELOG.md)
+Version **1.1.2**
 
 [简体中文](README_cn.md)
 
@@ -32,7 +32,7 @@ BookmarkSync backs up and syncs your browser bookmarks to **your own** remote st
 | **Install** | Browser add-on store | Download `.app` |
 | **Syncs** | That browser’s bookmarks | Safari bookmarks |
 
-You can use the extension alone, the Mac app alone, or both — point them at the **same** Gist / Gitea / WebDAV to stay in sync across browsers.
+You can use the extension alone, the Mac app alone, or both — point them at the **same** Gist / Gitea / WebDAV / S3 to stay in sync across browsers.
 
 ---
 
@@ -65,7 +65,7 @@ If a Safari version is provided, install the companion app from the Mac App Stor
 
 1. Open **Settings** (extension popup → gear, or macOS app → Settings tab).  
 2. Go to **Connection**.  
-3. Choose a storage type: **GitHub Gist**, **Gitea**, or **WebDAV**.  
+3. Choose a storage type: **GitHub Gist**, **Gitea**, **WebDAV**, or **S3**.  
 4. Fill in the fields (see below).  
 5. Click **Test Connection**.  
    - For Gitea or WebDAV, allow access when the browser asks for permission to your server URL.  
@@ -161,7 +161,7 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 
 ## Privacy
 
-BookmarkSync does not operate sync servers. Bookmarks and credentials are stored on your device or in storage you configure (GitHub, Gitea, WebDAV).  
+BookmarkSync does not operate sync servers. Bookmarks and credentials are stored on your device or in storage you configure (GitHub, Gitea, WebDAV, S3).  
 
 Full policy: [Privacy Policy](PRIVACY.md)
 
