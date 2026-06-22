@@ -2,6 +2,8 @@
 
 **Cross-browser bookmark sync** — keep bookmarks in sync across Chrome, Firefox, Edge, and Safari using storage **you** control.
 
+Version **1.1.2** · [Changelog](docs/CHANGELOG.md)
+
 [简体中文](README_cn.md)
 
 ---
@@ -15,6 +17,12 @@ BookmarkSync backs up and syncs your browser bookmarks to **your own** remote st
 - **GitHub Gist** — simple cloud backup via a personal token  
 - **Private Gitea** — self-hosted Git repository  
 - **WebDAV** — Nextcloud, Synology NAS, or any WebDAV folder  
+- **S3-compatible** — AWS S3, Cloudflare R2, MinIO  
+
+**Extension highlights (v1.1.2)**
+
+- **Tools hub** — health panel, duplicates, broken links, snapshots, merge preview, version history, tab sessions  
+- Optional **end-to-end encryption** for remote bookmark files  
 
 **Two ways to use it**
 
@@ -155,7 +163,7 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 
 BookmarkSync does not operate sync servers. Bookmarks and credentials are stored on your device or in storage you configure (GitHub, Gitea, WebDAV).  
 
-Full policy: [Privacy Policy](docs/PRIVACY.md)
+Full policy: [Privacy Policy](PRIVACY.md)
 
 ---
 
