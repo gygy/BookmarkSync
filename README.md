@@ -157,6 +157,17 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 - View and restore snapshots in **Settings → Data** (extension) or the **Data** tab (Mac app).  
 - Config backups let you restore previous connection settings.
 
+
+---
+
+## Downloads
+
+Before store listing is live, get the latest **Chrome** extension ZIP (v1.1.2) from [dist/](dist/):
+
+- [BookmarkSync-1.1.2-chrome.zip](dist/BookmarkSync-1.1.2-chrome.zip)
+
+Product screenshots: [screenshots/](screenshots/) (English at root, zh_CN/ for Chinese).
+
 ---
 
 ## Privacy
