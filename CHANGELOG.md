@@ -6,6 +6,18 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.9] - 2026-07-07
+
+### Fixed
+- **同步失败只显示「错误」、无具体原因**：手动同步失败时后台改为抛出/回传真实错误信息；HTTP 错误（WebDAV/Gitea 等）格式化更清晰。
+  - 扩展：`syncManualResult.ts`、`background.ts`、`formatError.ts`、`SyncHomePanel.tsx`、`syncSafety.ts`。
+- **合并同步误报「本地写入不完整」**：`isMergeLocalApplyComplete` 认可唯一 URL 数达标；Mac 同版发布。
+
+### Added
+- **备份策略细化（4 项独立配置 + 每周）**：配置备份、本地快照（自动）、远程归档（自动）、手动同步备份可分别设为每次/每天/每周/仅手动；默认远程归档每周、手动同步每天最多一次；仅改备份策略不再触发配置自动备份。
+  - 扩展：`backupPolicy.ts`、`options.tsx`、`optionsDefaults.ts`、`background.ts`、12 语言 i18n。
+  - **Mac 已对齐**：`BackupPolicy.swift`、`SettingsStore`、`SyncSafety`、`RemoteSyncService`、`MacFeatureViews.swift`、`BookmarkSyncApp.swift`。
+
 ## [1.1.8] - 2026-07-07
 
 ### Fixed

@@ -1,17 +1,17 @@
-# BookmarkSync v1.1.8 — Release notes
+# BookmarkSync v1.1.9 — Release notes
 
 ## English
 
-v1.1.8
+v1.1.9
 
-FIXED: WebDAV download and auto-sync failed with "text is not a function" (manual upload was unaffected)
-NEW: Configurable backup policy — settings backup and auto-sync snapshots default to once per day (also: every sync, or manual only)
-IMPROVED: Less backup noise when smart sync runs every few minutes; manual sync always backs up first
+FIXED: Sync errors showed only a generic message — real cause (token, WebDAV HTTP, E2E passphrase, etc.) now appears in the alert
+FIXED: Merge sync false "incomplete local write" when duplicate URLs exist in different folders (e.g. 583/584)
+IMPROVED: Backup policy split into 4 options (settings / local snapshot / remote archive / manual sync) with weekly mode; remote archive defaults to once per week
 
 ## 中文
 
-v1.1.8
+v1.1.9
 
-修复：WebDAV 下载与自动同步报错 text is not a function（手动上传不受影响）
-新增：可配置备份策略 — 配置备份与自动同步快照默认每天最多一次（也可选每次或仅手动）
-改进：智能同步频繁运行时减少备份占用；手动同步仍会先备份
+修复：同步失败只显示「错误」— 现显示具体原因（Token、WebDAV、加密口令等）
+修复：合并同步误报本地写入不完整（同一链接多文件夹时如 583/584）
+改进：备份策略拆为 4 项可独立配置，新增每周；远程归档默认每周一次
