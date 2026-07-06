@@ -1,0 +1,268 @@
+# Changelog
+
+All notable changes to BookmarkSync are documented here.
+
+## [Unreleased]
+
+（暂无）
+
+## [1.1.8] - 2026-07-07
+
+### Fixed
+- **WebDAV 下载/自动同步报 `this.request(..).text is not a function`**：`WebdavBackend.get()` / `getFileContent()` 在 `async request()` 返回的 Promise 上直接调用 `.text()`，上传（PUT）不受影响。现已先 `await` 响应再读正文。
+  - 扩展：`webdavBackend.ts`；新增 `tests/webdavBackend.test.ts`。
+
+### Added
+- **可配置备份策略（默认每天一次）**：配置备份与自动同步前的本地快照/远程归档支持「每次 / 每天最多一次 / 仅手动」；手动同步始终备份。设置 → 数据 → 备份策略。
+  - 扩展：`backupPolicy.ts`、`optionsDefaults.ts`、`background.ts`、`options.tsx`、12 语言 i18n。
+  - **Mac 已对齐**：`BackupPolicy.swift`、`SettingsStore`、`SyncSafety`、`RemoteSyncService`、`AutoSyncService`、`MacFeatureViews`。
+
+### Changed
+- 配置自动备份默认从「每次改设置」改为「每天最多一次」；自动同步快照/远程归档同理，减轻 5 分钟智能同步下的备份频率。
+
+
+## [1.1.7] - 2026-07-04
+
+### Fixed
+- **合并同步：本地写入不完整时不再先上传远程**：此前合并 apply 失败或部分跳过时仍会把合并结果推到远端，下一轮三方合并可能误删远程书签。现在先以 `isMergeLocalApplyComplete` 校验本地 apply，**仅完整时才上传**；不完整则记失败日志并保留远端不变。
+  - 扩展：`background.ts`（`mergeSyncBookmarks` 上传顺序）。
+- **删除保护使用实时本地计数**：`syncGuards` 删除保护改读 `countLocalBookmarksLive()`，storage 缓存失败时回退 `readStoredLocalBookmarkCount()`，避免误拦或误放下载。
+  - 扩展：`syncGuards.ts`。
+- **变更触发同步失败时保留待同步标记**：`runChangeAutoSyncForProvider` 仅成功时 `clearPendingChangeSync()`，失败则重排 `scheduleAutoUpload()`，避免改动丢失。
+  - 扩展：`background.ts`。
+- **周期自动同步与手动同步互斥**：`runPeriodicAutoSync` 检查 `isSyncOperationRunning()` 并包在 `withSyncOperationLock` 内，避免与变更/手动同步并发；周期 download 仅在成功时清 badge/刷新计数。
+
+### Changed
+- **Popup / 设置页 UI 美化与窄屏布局**：
+  - Popup 同步流程条改为纵向堆叠（`ms-sync-flow--popup`），隐藏连接器；双端同步警告、目标 chips 使用 compact 样式。
+  - 设置按钮改为仅图标（`aria-label` + `title`）。
+  - `SyncStatusBar`、diff 横幅、快照筛选操作行、工具列表项在窄屏下换行/纵向排列。
+  - 扩展：`SyncHomePanel.tsx`、`popup.css`、`popup.tsx`、`extensionTheme.css`、`sync-home.css`、`options.css`、`tools.css`。
+
+### Added
+- **合并大规模删除防护**、**书签快照按日保留 + 分页**、**远程快照子目录迁移**、**工具/数据标签职责分离**、**同步流程条中间目标节点**、**多语言补全**（自 1.1.6 Unreleased 并入本版发布）。
+
+## [1.1.6] - 2026-06-30
+
+### Changed
+- **智能模式默认「书签一改就同步」，不再等周期间隔**：此前变更触发同步把**周期间隔（默认 5 分钟）当成两次变更同步的最小间隔**，导致改完书签后 5 分钟内的后续改动都被推迟——表现为「改了要等几分钟才上传」。现在把三件事彻底解耦:
+  - **去抖窗口（3s）**:合并连续编辑/拖拽整理/批量导入为一次同步,天然防风暴（批量导入只在结束后 3s 同步一次）。
+  - **变更触发最小间隔**:从「周期分钟数」改为固定 `AUTO_SYNC_CHANGE_MIN_INTERVAL_MS = 3s`（≈去抖）,本机一改 → 约 3s 后立即合并同步。
+  - **周期间隔（用户设的 5 分钟）**:只负责定时拉取**其他设备**的远端改动 + 失败自愈,不再影响本机改动的同步速度。
+  - **同步进行中又有新改动不丢失**:此前 `runChangeAutoSync` 在已有同步运行时直接 `return`（丢弃该次触发）。现在改为**重排快速去抖、稍后重试**,保证最后一次改动一定被同步,且绝不并发两个同步。
+  - 变更触发仍走 **merge**（拉+合+传）,既实时又不会覆盖其他设备刚改的远端;局域网下通常仍在 3s 内完成。
+  - 扩展:`autoSync.ts`（新增 `AUTO_SYNC_CHANGE_MIN_INTERVAL_MS`）、`background.ts`（`runChangeAutoSyncForProvider` 用新常量、忙时重排不丢失）、i18n `autoSyncIntervalHintAuto` 文案改为「本机改动数秒内同步;此间隔只控拉取远端的频率」（12 语言）、`tests/autoSyncMode.test.ts`（解耦回归用例）。
+  - **Mac 已对齐**:`AutoSyncService.changeSyncMinInterval = 3s`、`canRunChangeSync` 不再乘以周期分钟数、忙/节流时重排去抖而非丢弃（另有 15s 轮询定时器兜底）。
+
+### Added
+- **「未写入本浏览器」的链接现在能看到具体原因**：合并同步时被浏览器拒绝创建的书签（日志里的「N 个未写入」），此前只把错误打到 Service Worker 控制台，用户无从知晓为何本地永远比远端少。现在增量写入会**采集失败条目（标题/URL/归类原因）**，按原因聚合后写进同步日志（如「未写入本浏览器的原因：不支持的链接协议 ×180、FTP 链接 ×12」），完整明细（最多 50 条样本）存入 `storage.local` 的 `syncApplyFailureSamples` 供深入排查。原因归类含：FTP 链接、非 http(s) 协议、链接过长、父文件夹缺失、无效链接、其他。
+  - 扩展：`bookmarkTreeSync.ts`（`classifyApplyFailure`/`summarizeApplyFailures`/采集失败样本，`applyBookmarkTreeIncremental` 返回 `failureSamples`）、`background.ts`（聚合写日志 + 存诊断）、i18n `applyFailReason*`（12 语言）、新增 `tests/applyFailureDiagnostics.test.ts`。
+  - **背景**：本地 388 / 远程 580 长期不一致，正是这 ~192 条链接浏览器拒绝写入所致；它们会一直显示「仅远程」。先暴露原因，再决定是否从云端清理。
+
+### Changed
+- **智能合并改为三方合并：删除终于生效，不再被「复活」**：此前合并同步用的是 local∪remote **纯并集**，永远不会删除——删掉一条本地书签后，约 3 秒自动同步触发 merge，远端那条还在，于是被并回本地、看似「自动恢复」。现在引入**上次同步基准快照**做三方合并：
+  - **删除传播（双向）**：某条 URL 在基准里有、但现在本地没了（本机删除）或远端没了（其他设备删除）→ 判定为删除，从合并结果剔除并同步到各端，不再复活。
+  - **新增仍照常**：基准里没有、本地或远端新出现的 URL 视为新增，正常合并。
+  - **首次安全**：无基准时（首次同步或老用户升级）退回并集行为；每次成功的合并/上传/下载后写入新基准（本地≡远端的状态）。清空远端后基准置空；快照恢复后基准置空（恢复是有意的整树替换，下次合并按并集，避免把「恢复掉的条目」当删除传播）。
+  - 升级后**首次**合并会先把现状（含你之前被复活的那条）确立为基准；**再删一次**即可永久生效。
+  - 扩展：`mergeBookmarks.ts`（`mergeBookmarkTrees` 增加 `baseRoots` + 删除剪枝）、`syncOrchestrator.ts`（`buildMergePlan`/`runMergeSync` 透传基准并回传 `newBaseRoots`）、`mergeConflictStats.ts`、`background.ts`（`lastSyncedBaseRoots` 读写：合并/上传/下载/清空远端/恢复各节点维护基准）、新增 `tests/mergeThreeWay.test.ts`。
+  - **Mac 已对齐**：`BookmarkMerge.merge(...baseRoots:)` 同等剪枝、新增 `SyncBaseStore`（UserDefaults `lastSyncedBaseRoots`），`AutoSyncService`/`RemoteSyncService`/`BookmarkSyncApp` 的合并/上传/下载/清空远端/快照恢复同步维护基准。
+
+### Fixed
+- **合并成功后 popup 仍显示「本地 580 · 云端 579 · Δ1」**：同步日志与合并结果已正确报告 580/580，但 popup 打开时会 `refreshCounts` 重新拉远端并用 `countUniqueBookmarkUrls`（按 URL 去重）计数，而本地与合并计划使用 `countCreatableBookmarkUrls`（按可写入的书签条目数）。当同一 URL 出现在多个文件夹时两者差 1。现远端刷新计数与本地统一为 `countCreatableBookmarkUrls`。
+  - 扩展：`syncCounts.ts`、新增 `tests/syncCounts.test.ts`。
+- **加强「父文件夹缺失」修复（192 条仍写不进本地）**：上一轮已做静态 id 重定向 + 同根合并，但若扩展未重载、或系统根在 `getTree` 里存在却**拒绝 `bookmarks.create`**（典型：桌面 Chrome 的移动书签根 id `'3'`），仍会 192 次 `Can't find parent`。现增加三层兜底：
+  - **`resolveWritableSystemFolderIds`**：用 `bookmarks.get` 实测每个系统根 id 是否真实可寻址，不可寻址则重定向到第一个可写文件夹（不再只比对 getTree 子节点列表）。
+  - **修复 `verifyParentFolderId`**：`bookmarks.get` 返回的是数组，旧代码当成单节点导致校验恒失败。
+  - **`createBookmarkEntry` 父缺失回退**：若 trusted 父 id 创建仍抛 parent 错误，取消信任并回退到书签栏/已验证文件夹，避免对同一死 id 空转 5 次。
+  - 合并 apply 改用 `buildVerifiedBookmarkCreateContext`；新增单元/集成回归（缺 Mobile 根、Mobile 根拒绝 create）。
+- **根治「仅远程 192 条 · 父文件夹缺失」永远写不进本地**：诊断显示这 192 条全部因「父文件夹缺失」失败——它们属于某个**本机不存在的系统根**（典型：远端带「移动设备书签 / Mobile bookmarks」根，而本机这台桌面 Chrome 没有该文件夹，其默认 id `'3'` 不存在）。旧逻辑把这个**猜测的、根本不存在的** id 预先列入「可信父」，`bookmarks.create` 一律抛 `Can't find parent`，且每次重试同一个死 id → 永远失败、永远「仅远程」。现在：
+  - **存在性重定向**：`systemFolderIdsFromRootChildren` 解析后，任何不在真实根节点中的系统文件夹 id 一律重定向到确实存在的文件夹（优先「其他书签」，其次书签栏），书签从此有处可落。
+  - **同根合并**：当多个 desired 根（如 Mobile 根与 Other 根）重定向到同一真实文件夹时，`applyBookmarkTreeIncremental` 先按真实系统文件夹 id **合并各根的子节点再处理一次**，避免第二个根的对账删除清掉第一个根刚写入的书签（防止反复增删/重复）。
+  - 扩展：`bookmarkTreeWriter.ts`（`systemFolderIdsFromRootChildren` 重定向）、`bookmarkTreeSync.ts`（`groupDesiredBySystemFolder` + 按真实文件夹合并 apply/匹配）、新增集成回归用例（移除本机 Mobile 根后，远端移动书签仍被写入且二次同步幂等无重复）。
+  - **Mac 无需此修复**：macOS 走 Safari plist 整树写入，不存在「挂载到不存在的固定根 id」的问题。
+- **合并同步误报「本地写入不完整 391/580」**：当浏览器拒绝写入的链接（如 bookmarklet、`javascript:` 等，日志里的 190 条）已在 apply 阶段跳过时，成功判定应把「已写入 + 已跳过」一并计入。此前只比较 `appliedCount >= plannedCount`，导致 391+190≈580 仍报失败并提示重试。现在用 `isMergeLocalApplyComplete(applied + skipped >= planned)` 判定。
+- **Gitea「测试连通性通过但上传 403」**：连通性测试此前只做 GET（读文件），读-only Token 也能通过；实际上传 PUT 需要写权限。现在测试会检查仓库 API 返回的 `permissions.push`，无写权限时直接提示「Token 仅有读权限」；上传 403 时也抛出相同说明。
+  - 扩展：`syncOrchestrator.ts`（`isMergeLocalApplyComplete`）、`background.ts`、`verifySyncConfig.ts`、`giteaBackend.ts`、i18n `verifyGiteaNoWriteAccess`。
+- **修复「改书签约 3 秒仍不同步」(MV3 SW 重启丢 timer)**：书签变更的 3s 去抖此前只靠内存 `setTimeout` + 短 `alarm`;Service Worker 常在 3s 内被回收,timer 丢失,而 Chrome 对打包扩展的 `alarm` 又有 ~1 分钟下限,导致变更触发同步**静默永不执行**。现在把「待同步截止时间」写入 `storage.local`(`pendingChangeSyncAt`),SW 每次唤醒时检查:已过期则**立即补跑**,未过期则重挂剩余毫秒计时器;同时修复 `suppressAutoSync`/手动同步占用锁时**丢弃变更**的问题(改为重排去抖),变更合并期间设置 `curOperType=SYNC` 避免本地写入触发的事件风暴,并写入 `syncDiagPhase`(`auto:scheduled`/`auto:changeSync`/`auto:skip:*`)便于排查。
+  - 扩展:`autoSync.ts`（`PENDING_CHANGE_SYNC_AT_KEY`、`changeSyncDelayMs`）、`background.ts`（`flushPendingChangeSync`/`armChangeDebounceTimer`/持久化去抖）。
+- **修复「离开界面后彻底不自动同步」的根因（MV3 alarm 反模式）**：`setupAutoSync` 此前在 Service Worker **每次被唤醒**（开 popup、书签事件、收消息等）时都先 `clear` 再 `create` 周期 alarm。由于 SW 被频繁唤醒（往往短于同步间隔），5 分钟的周期 alarm 的倒计时**每次都被重置、永远到不了期** → 定时/智能同步实际上从不触发。同时它还会清掉刚为「书签变更」排好的 debounce alarm，可能吞掉那一次变更触发的同步。
+  - 现在 `setupAutoSync` **幂等**：先 `alarms.get` 检查，已存在且周期一致的 alarm **原样保留**（倒计时不被重置），仅在缺失或间隔变化时才重建；只清理「非当前提供方/已关闭」的过期周期 alarm；**不再清理 debounce alarm**。配置变更时仍会按需重建。
+  - 扩展：`background.ts`（`setupAutoSync` 重写为幂等 + `ALL_PERIODIC_ALARMS`）。
+  - **Mac 无需此修复**：macOS 是常驻应用，用 `Timer` 而非 alarm，不存在「被反复重置」问题。
+- **变更触发同步 3s 内完成（绕过 Chrome alarm 的 ~30s 下限）**：书签变更的 3s 防抖此前仅靠 `alarms.create({when})` 实现，而 Chrome 对打包扩展的 alarm 有 **~30s 最小延迟**，导致「改完书签要等 ~30s 才同步」。现在改为**真实 `setTimeout(3s)` 作为主路径**（书签事件刚把 SW 唤醒、此刻 SW 必然存活，3s 计时器可靠触发），alarm 仅作为「SW 在 3s 内被回收」的兜底；计时器先触发时会清掉兜底 alarm。局域网下变更→同步可稳定落在 3s 内。
+  - 扩展：`background.ts`（`scheduleAutoUpload` 改为 `setTimeout` 主 + alarm 兜底，`changeDebounceTimer`）。
+- **旧的纯变更模式归一为 `auto`，让升级用户也获得定时兜底**：存量配置里若是 `onChange`/`onChangeMerge`（旧默认，无周期 alarm，拉不到其他设备改动、失败不自愈），现在读取时统一归一为 `auto`；显式的 `periodicUpload`/`periodicDownload`/`periodicMergeSync`/`readOnlyMirror`（单向/镜像意图）原样保留。
+  - 扩展：`autoSync.ts`（新增 `normalizeAutoSyncMode`）、`setting.ts`（`autoSyncFor` 应用归一）、`tests/autoSyncMode.test.ts`（归一用例）。
+  - **Mac 已对齐**：`AutoSyncMode.normalized` + `SettingsStore.autoSyncSettings(for:)` 应用归一。
+
+### Changed
+- **同步策略合并为单一「智能同步（`auto`）」并设为默认**：此前自动同步有 6 种模式（变更上传/变更合并/定时上传/定时下载/定时合并/只读镜像），用户需在 6 选 1 中纠结，且最常用的「变更时合并」与「定时合并」是割裂的两种。现在新增统一的 `auto` 模式并设为所有提供方的默认：**本机书签一变更就防抖后合并同步（实时上传本机改动），同时挂定时 alarm 周期性合并兜底（拉取其他设备的远端改动 + 失败自愈）**。一种策略同时覆盖「实时」与「定时」，开箱即用、双向最终一致。
+  - **修复多设备数据不一致根因**：旧的纯变更触发模式（`onChange`/`onChangeMerge`）只在**本机**书签变更时触发、不挂定时 alarm，导致其他设备改了远端、而本机没动书签时**永远不会拉取**——长期本地/云端不一致。`auto` 的定时合并兜底解决此问题。
+  - **修复「离开界面后不自动同步」残留**：变更触发若失败/超时无重试兜底；`auto` 的定时合并会周期性自愈。
+  - **UI 简化**：设置页同步方式下拉由 6 项精简为「智能同步（推荐）/ 只读镜像」两档（开关本身表达「关闭」）；已保存旧模式的用户仍会看到该旧模式可选项、行为继续兼容，切换后即升级为新值。
+  - 扩展：`autoSync.ts`（新增 `auto` 类型、`isChangeAutoSyncMode`/`isPeriodicAutoSyncMode` 含 `auto`、新增 `isMergeAutoSyncMode`、描述 key）、`background.ts`（两个 runner 加 `auto`→合并分支；`setupAutoSync` 因 `auto` 同属两类自动既记指纹又建 alarm）、`optionsDefaults.ts`/`setting.ts`/`useOptionsAutoSave.ts`（默认值 `auto`）、`options.tsx`（下拉简化 + 旧值归一）、i18n `autoSyncAuto`/`autoSyncDescAuto`/`autoSyncIntervalHintAuto`（12 语言）、新增 `tests/autoSyncMode.test.ts`。
+  - **Mac 已对齐**：`SettingsStore.AutoSyncMode` 新增 `.auto`（`usesChangeMonitor`+`usesPeriodicTimer` 均含）、默认值改 `.auto`；`AutoSyncService` 的 `checkBookmarkChange`/`runPeriodicSync` 对 `.auto` 走合并；`MacFeatureViews` 模式选择器简化为 `selectableCases`（`.auto`/`.readOnlyMirror`）+ 旧值兼容。
+
+### Fixed
+- **删除保护静默跳过下载、用户无感知**：`readOnlyMirror`/`periodicDownload` 在「开启删除保护且本地已有书签」时直接静默 `return/continue`，既不提示也不刷新——表现为「只读镜像同步没反应、远端新增永远拉不下来」。现在跳过时**保留待同步角标并写入同步日志**（`syncSkippedDeleteProtection`），用户能在同步日志看到原因与处理建议。
+  - 扩展：`background.ts`（`noteDownloadSkippedByDeleteProtection`，变更与定时两路下载跳过均记录）、i18n `syncSkippedDeleteProtection`（12 语言）。
+  - **Mac 无需对齐**：Mac 端 `performDownload` 经 `assertDownloadAllowed` 抛异常并记 `.failure` 日志，本就不静默。
+
+## [1.1.5] - 2026-06-29
+
+### Changed
+- **Windows 开发环境 Node.js**：本机已通过 winget 安装 Node.js LTS（v24）；新增 `scripts/ensure-node.ps1` 与 `scripts/test.ps1`，在 PATH 未含 `node`/`npm` 时自动定位 `Program Files\nodejs` 等常见安装路径；`npm run test:win` 与 `git-sync.ps1` 均会先调用该脚本。`npm run test` 已验证 **66/66** 通过。
+- **自动同步只对当前选中的一种同步方式生效**：此前各提供方（GitHub/Gitea/WebDAV/S3）默认都开着自动同步，只要配置了凭证，后台会对所有已配置提供方分别建立监听/定时器并同步。现在自动同步**只针对当前 `syncProvider`（用户选定的那一种）**运行，其余提供方即使已配置且开了自动同步也不会触发。与设置页「自动同步只显示当前提供方配置」的现状保持一致。
+  - 扩展：`setting.ts`（`hasAnyAutoSyncEnabled` 仅看当前提供方）、`background.ts`（`setupAutoSync`/`runChangeAutoSync`/`runPeriodicAutoSync` 不再遍历 `ALL_SYNC_PROVIDERS`，并忽略非当前提供方的过期 alarm）。
+  - **Mac 已对齐**：`AutoSyncService`（`applySettings`/`checkBookmarkChange`/`runPeriodicSync` 仅对 `settings.syncProvider` 生效，忽略过期定时器）。
+
+### Changed
+- **大幅加快同步速度（减少网络与本地读取往返）**：合并同步的关键路径此前包含多次冗余开销，现已削减：
+  - **本地读取 3 次 `getTree` → 1 次**：`applyBookmarkTreeIncremental` 用同一次 `getTree` 结果同时完成「系统文件夹定位 / preHeal / 匹配检查」，仅当 preHeal 真正改动过树时才重新读取（新增 `systemFolderIdsFromRootChildren`、`buildBookmarkCreateContextFromRootChildren`）。
+  - **Gitea 上传省去一次「取 sha」GET**：合并开始时的 `get()` 会缓存文件 blob sha，`update()` 直接复用，PUT 成功后用响应里的新 sha 刷新缓存；sha 失效（409/422/404）时自动回退重取并重试，绝不会因缓存陈旧写坏远端。
+  - **合并成功后不再额外打 2 次远端 GET 刷新计数**：合并刚上传完，本地/远端数量已知（本地=已写入数、远端=已上传数），直接写入存储，去掉内部与 `finishSyncMessage` 各一次 `refreshSyncCounts` 的远端请求。
+  - 综合效果：**稳定态（无变化）合并 ≈ 2 次 Gitea 往返 + 1 次本地 `getTree`**，局域网下通常 1s 内完成；首次清理 191 条无效链接那种大改动属一次性。实际耗时仍受局域网 Gitea 延迟下限约束。
+  - 扩展：`bookmarkTreeWriter.ts`、`bookmarkTreeSync.ts`、`giteaBackend.ts`、`background.ts`、新增 `getTree` 单次读取回归测试。
+  - **Mac 待对齐（可选优化）**：`RemoteSyncService` 的 Gitea 上传可同样缓存 sha；本地写入读取优化为扩展独有。
+
+- **同步自动过滤无法存储的链接（一次到位）**：`buildMergePlan` 现在在合并阶段就把 `javascript:`/`chrome://`/`data:` 等浏览器无法保存的链接从**本地写入树**与**上传内容**中一并剔除。效果：本地写入不再产生「被浏览器拒绝」的失败、合并干净地报成功（附「已过滤 N 个无效链接」说明），且**再同步一次后云端文件也会收敛为干净的可同步集合**，本地与云端的可同步书签数自然一致。
+  - 扩展：`syncOrchestrator.ts`（`merged` 树预先 `sanitizeBookmarkTreeForCreate`、`omittedUncreatableCount` 基于过滤前后差值）、新增回归测试。
+- **帮助页新增「哪些书签无法同步」说明**：列出 bookmarklet、浏览器内部页、`data:`/`mailto:` 等非网页协议、畸形链接四类，并说明同步会自动过滤、被过滤数量会记入日志。
+  - 扩展：`options.tsx`（帮助页新区块）、i18n `helpUnsyncable*`（12 语言，非英语为英文回退）。
+- **修复 i18n 文件损坏**：此前批量脚本用 `$1` 字符串替换误把整块内容嵌入，导致 10 个语言的 `syncUncreatableInCloud`/`syncLocalApplyGap`/`logMergePartial` 等键 JSON 损坏；已用函数替换重建为有效英文回退，并补回 zh_CN 丢失的 `logOperationAutoDownload` 键。12 语言全部校验通过。
+
+### Fixed
+- **合并日志仍显示「582 成功」与 190 条被拒矛盾**：冲突统计现仅计可创建 URL（不再出现「仅远程 191 条」误导）；上传 payload 会剔除 `javascript:`/`chrome://` 等无效链接（下次远端计数与本地对齐）；有浏览器拒绝写入时改为**部分完成**（`logMergePartial`），不再标「成功 + 同步仍已完成」。
+  - 扩展：`mergeConflictStats.ts`、`syncOrchestrator.ts`（`sanitize` 上传）、`background.ts`、i18n `logMergePartial`/`syncUncreatableOmittedFromUpload`（12 语言）。
+
+- **合并显示「成功」但本地/云端永远不一致（391 vs 582 根因）**：合并计划用原始 URL 计数（582），但 Chrome 无法创建约 191 个无效/被拦截链接（`javascript:`、`chrome://` 等）；`scopedTreeMatches` 用「可创建子集」比对后误判为已匹配，跳过本地写入，却仍把上传当成功并乐观写入计数。现在：① 本地/云端计数统一为**可创建**书签数；② `applyLocalRoots` 写入后**实测**本地数量，不再假定计划数；③ 本地未写满则标为失败并提示；④ 合并完成后刷新真实计数；⑤ 云端含不可创建链接时给出说明。
+  - 扩展：`bookmarkTreeWriter.ts`（`countCreatableBookmarkUrls`）、`syncCounts.ts`、`syncOrchestrator.ts`、`background.ts`、i18n `syncUncreatableInCloud`/`syncLocalApplyGap`（12 语言）。
+  - **Mac 待对齐**：Swift 端计数与成功判定需同样区分可创建 URL。
+
+- **同步耗时过长 / 离开界面后自动同步跑不完（preHeal 冗余 IO 根因）**：合并前的一次性重复项自愈 `preHeal`（`healLiveDuplicateSiblingsRecursive`）即使在**没有任何重复**时，也会对树中**每个文件夹**无条件执行一次 `browser.bookmarks.getChildren`，且其返回值丢失了 `children`，导致递归时**每个子文件夹又被额外 `getChildren` 一次**。582 条书签、上百文件夹 ⇒ 数百次串行 API 调用，preHeal 阶段就要耗费可观时间。同步整体过重时，MV3 Service Worker 在 popup 关闭后会被浏览器回收，后台自动同步在完成前被中断——这正是「离开扩展界面后不自动同步」的主因。现在 `healLiveDuplicateSiblingsAtLevel` **仅在本层确实发生了去重改动时才重新拉取子节点**，否则直接复用 `getTree` 已带的 `children`，无重复树的 preHeal 几乎零额外 IO，同步显著加快、后台自动同步更可能在被回收前完成。
+  - 扩展：`bookmarkTreeSync.ts`（`healLiveDuplicateSiblingsAtLevel` 增加 `mutated` 判定，未改动则复用既有 `children`）。
+  - **Mac 无需对齐**：此自愈逻辑针对浏览器原生同步产生的重复文件夹，为扩展独有；Safari plist 写入路径无同类机制。
+
+- **`Can't find bookmark for id.` 导致合并同步失败（真正根因）**：本地写入阶段，删除多余书签/文件夹时直接 `browser.bookmarks.get()/remove()/removeTree()`，但目标 id 可能在本轮中已被「父文件夹 removeTree」或「重复项自愈」提前删除而失效。这三处删除调用**未加 try/catch**，一旦命中失效 id 就抛 `Can't find bookmark for id.` 并中断整个合并 → 上传不执行、同步失败。现在统一用 `removeStaleNode` 包裹：失效 id 视为「已删除」并跳过，绝不再因单个失效节点中断同步。
+  - 扩展：`bookmarkTreeSync.ts`（`removeStaleNode` + `MISSING_NODE_ERROR` 容错、scoped 删除加 try/catch）、新增集成测试「重复自愈留下失效 id 时不抛错」。
+  - **Mac 待对齐**：核对 Swift 端写入删除是否也需容忍失效节点。
+
+- **合并同步长期停在 `merge:localApply`（本地写入极慢）**：增量写入 `syncFolderLevel` 在**每个文件夹层级**都重复执行整棵子树的重复项自愈（`healLiveDuplicateSiblingsRecursive`），582 条书签 + 深层文件夹会触发**数千次**串行 `browser.bookmarks` API 调用，表现为一直停在「正在同步 · merge:localApply」。现在改为：**仅在合并开始前做一次 preHeal**，去掉每层 start/end 的冗余自愈；写入过程每 20 次操作更新阶段（`merge:localApply:40` 等），便于确认在前进而非卡死。
+  - 扩展：`bookmarkTreeSync.ts`（移除 per-level 冗余 heal、新增 `onProgress`）、`background.ts`（写入进度写入 `syncDiagPhase`）。
+  - **Mac 待对齐**：Swift 端增量写入若存在同类 per-level 重复自愈，需同样优化。
+
+- **合并同步因个别书签被浏览器拒绝而每次失败（根因）**：本地增量写入时，`applyIncremental` 只要遇到 `result.failed > 0` 就抛 `bookmarkCreatePartialFailure`，导致 `runMergeSync` 直接失败、**上传根本不执行**。只要云端书签里含浏览器拒绝创建的 URL（`javascript:`、`chrome://`、`place:`、畸形/超长链接等），同步就**每次必然失败**——连接测试只做 GET 故能通过。现在本地写入**容忍**这些被拒节点：跳过它们、继续完成合并与上传，并在同步日志/通知里如实标注「跳过 N 条」。
+  - 同时新增**同步阶段实时诊断**：后台在 `merge:start/fetchRemote/plan/localApply/localApplied/upload/finalize/done` 等关键步骤写入 `storage.local.syncDiagPhase`；popup「正在同步」提示会**实时显示当前阶段**（经 storage 监听更新），超时提示也会附上最后阶段，能直接看出卡在拉取、本地写入还是上传。`runMergeSync` 新增 `onPhase` 回调以区分「计算方案 / 本地写入 / 写入完成」。
+  - 扩展：`background.ts`（`applyIncremental` 不再因部分失败抛错、`lastLocalApplyFailures` 计数、`setSyncDiag` 阶段写入、合并日志追加 `syncLocalApplyPartial`）、`SyncHomePanel.tsx`（超时提示附带阶段）、i18n `syncLocalApplyPartial`（12 语言）。
+  - **Mac 待对齐**：核对 Swift 端合并写入是否也会因个别书签失败而整体中断，如是需同样改为容忍。
+
+- **Gitea 合并同步 90s 超时（连接测试通过但同步失败）**：`runMergeSync` 曾用 `Promise.all` 同时等待「本地书签合并」与「远端快照归档」（`pushRemoteSnapshot` 含多次 Gitea PUT/DELETE）。连接测试只做 GET，合并却要写快照 + 上传，内网 Gitea 写入慢时总耗时超过 90s 锁超时。现在快照归档改为**后台异步**（不阻塞合并），合并锁上限单独放宽至 **180s**（上传/下载仍为 90s）。
+  - 扩展：`syncOrchestrator.ts`（`parallelArchive` fire-and-forget）、`syncOperationLock.ts`（`MERGE_SYNC_MAX_MS`）、`background.ts`（merge 用 180s 锁）、`SyncHomePanel.tsx`（客户端看门狗 200s）、新增集成测试「不等待 parallelArchive」。
+  - **Mac 待对齐**：`RemoteSyncService` 合并前远端归档若同样阻塞主路径，需改为异步（后续核对 Swift 合并流程）。
+
+- **同步后一直提示「正在同步中」无法再同步（死锁）**：后台用内存锁 `withSyncOperationLock` 串行化同步，靠 `work()` 完成后的 `finally` 释放。若某次同步的网络请求在 TCP 层被静默丢包/卡住而永不返回（常见于内网 Gitea 经防火墙），`finally` 永不执行，`running` 永久卡在 `true`，之后每次点同步都被 `isSyncOperationRunning()` 直接挡回「正在同步中」。现在给锁加**硬超时（90s）**：无论 `work()` 是否返回，超时即强制释放锁并抛 `SyncOperationTimeoutError`，调用方收到友好的「同步超时」提示而非死锁。
+  - 扩展：`syncOperationLock.ts`（`withSyncOperationLock` 加 `maxMs` 竞速 + `SyncOperationTimeoutError`）、`background.ts`（`finishSyncMessage` 将超时错误映射为 `syncTimeoutHint`）、`SyncHomePanel.tsx`（客户端看门狗提到 110s，置于后台超时之上以便真实错误先返回）、新增 `tests/syncOperationLock.test.ts` 超时释放用例。
+  - **Mac 不适用**：死锁源于 MV3 后台 Service Worker 的内存锁，macOS 原生应用无此结构（属平台独有）。
+
+- **同步「一直转圈、几分钟不结束」**：MV3 Service Worker 可能在同步进行中被浏览器回收，导致 popup/设置页的 `sendMessage` 响应丢失、`await` 永不返回、spinner 永久转圈（从未报错）。现在为每次同步/上传/下载/差异预览加**客户端看门狗超时**（同步 90s、预览 45s），超时即停掉 spinner 并提示「同步超时，去同步日志查看结果」；后台若稍后完成，计数仍会经 storage 监听自动刷新。
+  - 同时收紧网络层超时：三个远端后端（GitHub/Gitea/WebDAV）的 ky `timeout` 由 **60s 降到 20s**（保留 `retry: 1`），内网/不可达时快速失败，不再串成好几分钟。
+  - 扩展：`SyncHomePanel.tsx`（`sendMessageWithTimeout` 看门狗 + `syncTimeoutHint` 提示，popup 与设置页共用）、`giteaBackend.ts`/`githubHttp.ts`/`webdavBackend.ts`（timeout 20s）、i18n `syncTimeoutHint`（12 语言）。
+  - **Mac 已对齐（网络超时）**：`RemoteSyncService` 的 `giteaRequest`/`githubRequest`/`webdavRequest` 设 `request.timeoutInterval = 20`。看门狗为 MV3 消息机制特有，macOS 原生应用无此问题（属平台独有，无需对齐）。
+
+### Changed
+- **点击图标改为弹出轻量浮窗**：此前工具栏图标的 `default_popup` 指向完整设置页 `options.html`，把六个标签（首页/连接/自动同步/数据/工具/帮助）和自动保存长表单挤进 popup，失焦即关闭、编辑易被打断。现在新增独立轻量入口 `popup.html`，只承载同步首页（计数、同步/上传/下载、查看差异、切换目标），并在顶部提供「设置」按钮通过 `openOptionsPage` 打开完整设置页。`options.html` 仍作为独立设置标签页保留。
+  - 扩展：`src/entrypoints/popup/{index.html,popup.tsx,popup.css}`（复用 `SyncHomePanel`/`SyncStatusBar` + react-hook-form 表单骨架与 `useOptionsAutoSave` 持久化）、`wxt.config.ts`（`action.default_popup` 改为 `popup.html`）。popup chunk 仅约 18KB。
+  - **Mac 不适用**：popup 为浏览器工具栏图标特性，macOS 应用使用菜单栏窗口，无对应概念（属平台独有，无需对齐）。
+
+### Added
+- **差异查看器**：当本地与云端书签数量不一致时，同步首页出现醒目提示横幅，可一键「查看差异」；数量一致时也提供轻量入口（可发现「数量相同但内容不同」的情况）。差异弹窗按双栏布局展示「仅本地有 / 仅远端有」的具体书签，含字母色块头像、标题、域名、所在文件夹路径，支持搜索过滤、点击在新标签页打开，并可直接「合并同步」消除差异。
+  - 扩展：`bookmarkDiff.ts`（`computeMergePreview` 增加 `localOnlyItems/remoteOnlyItems` 结构化项与路径、截断标志）、`BookmarkDiffDialog.tsx`、`SyncHomePanel.tsx`、`sync-home.css`、i18n `diffViewer*`。复用既有 `previewMerge` 后台消息，差异计算沿用 scope + exclude 过滤口径。
+  - **Mac 待对齐**：macOS 应用尚未提供等价的差异查看 UI；底层 scope/计数逻辑已对齐（见 1.1.4），仅缺可视化弹窗，后续在同步页补充。
+
+## [1.1.4] — 2026-06-28
+
+### Fixed
+- **本地与云端数量长期不一致**：云端计数此前统计远端文件里的**全部**书签，而本地计数会按「同步范围」和「排除文件夹」过滤，导致只要设置了范围或排除规则，两侧数字就永远对不上。现在云端计数同样应用相同的 scope + exclude 过滤，口径一致。
+  - 扩展：`syncCounts.ts`（`fetchRemoteScopedBookmarkCount` 解析远端后走 `prepareBookmarksForSync`）。
+  - **Mac 已对齐**：`RemoteSyncService.fetchRemoteBookmarkCount` 改用 `SyncCounts.countScopedBookmarkUrls`。
+- 说明：扩展图标「!」与数量漂移的根因若来自**浏览器自带书签同步与本扩展同时开启**，无法仅靠扩展消除——两者会互相覆盖书签。必须二选一（见双重同步提醒）。
+
+## [1.1.3] — 2026-06-27
+
+### Fixed
+- **重复文件夹自愈（加强）**：商店版 v1.1.2 未包含上一版修复；本版在合并/下载写入前**先**递归折叠浏览器里同层同名文件夹，合并逻辑也会合并多个同名本地/远程文件夹的子项，不再丢失内容。
+  - 扩展：`bookmarkTreeSync.ts`（`healLiveDuplicateSiblingsRecursive`）、`mergeBookmarks.ts`（同名文件夹分组合并 + `collapseDuplicateSiblingNodesInRoots`）。
+  - **Mac 已对齐**：`SafariBookmarkStore.collapseDuplicateSiblings`（v1.1.2 起已有）。
+
+### Added
+- **双重同步冲突提醒**：在首次引导（SetupWizard）、主页（SyncHomePanel）、设置→同步高级里提示用户「浏览器自带书签同步」与本扩展只能保留一套，否则会产生重复文件夹。
+  - 扩展：`DualSyncWarningBanner.tsx` + i18n `dualSyncWarning*`；主页提示可「知道了」永久关闭。
+  - **Mac 已对齐**：同步页顶部 `StatusBanner(.warning)` 提示关闭 iCloud Safari 书签同步（`L10n.dualSyncWarning`）。
+
+### Fixed
+- **自动同步在 MV3 下不可靠**：书签变更触发的防抖从 `setTimeout` 改为 `chrome.alarms`（Service Worker 休眠后仍会执行）；间隔节流到期后自动补调度。
+- **自动同步开关检测**：`hasAnyAutoSyncEnabled` 按当前手动同步目标（如 Gitea）判断，避免误跳过。
+- 设置页补充间隔说明：「书签变更时」模式下的间隔仅为节流；真正定时同步需选「定时合并同步」等模式。
+- 扩展图标叹号悬停提示：本地书签已变更、等待自动同步。
+
+## [Unreleased]
+
+Chrome Web Store resubmission after **Code Readability** rejection (obfuscated JS in store ZIP).
+
+### Fixed
+- Chrome / Web Store builds use **minification only** (`WXT_SKIP_OBFUSCATION=1`); `javascript-obfuscator` is no longer applied to packages submitted to Chrome.
+- `scripts/check-store-zip.mjs` fails the build if `_0x…` obfuscator identifiers remain in the Chrome bundle.
+- **`docs/PRIVACY.md`** — English/Chinese aligned with v1.1.2 (S3, E2E, tabs/windows/webNavigation, tab sessions, broken-link check).
+
+## [1.1.1] — 2026-06-20
+
+Chrome Web Store release following **1.1.0**.
+
+### Added
+- Header version badge on options / popup UI.
+- Incremental bookmark sync (no full clear-and-rewrite on merge/download).
+- Remote snapshots stored under `BookmarkSync/_snapshots/` (not repo root).
+- Configurable remote snapshot retention (max count, max age, scheduled cleanup).
+
+### Improved
+- Sync UI no longer blocks the whole panel while syncing; other tabs stay usable.
+- Sync mutex prevents parallel merge/upload/download races.
+- Local/remote counts align after merge; URL normalization unified.
+- 自动同步：各提供方独立注册周期 alarm；变更模式支持间隔设置与节流；S3 配置变更会触发 alarm 重建。
+- 书签数量：本地/远端统一按同步范围（scope）统计，手动同步后两侧计数一致。
+- 配置备份说明缩短为两行以内。
+- **Mac 应用**：与扩展对齐（`SyncCounts.swift`、`AutoSyncService`、设置 UI、远程快照子目录与保留策略）。
+
+### Fixed
+- Double-click sync could inflate bookmark counts and freeze the UI.
+- 合并后本地/远端书签计数不一致（按唯一 URL 计数）。
+
+## [1.1.0] — 2026-06-19
+
+### Added
+
+- **Tools hub** — Health overview, duplicate bookmark detection & cleanup, broken-link checker, empty-folder cleanup, organize by domain, HTML/JSON import & export
+- **Remote snapshot center** — List remote snapshots, preview diff, restore from snapshot (GitHub / Gitea / WebDAV / S3)
+- **Merge preview** — See local-only / remote-only items before merge sync
+- **Version history** — Browse Git commits (GitHub / Gitea) or remote snapshot history with diff preview
+- **Config backup** — Export/import settings profiles; local config backup list
+- **S3-compatible storage** — Full UI for endpoint, bucket, keys, auto-sync, and notifications
+- **Advanced sync** — Delete protection, read-only mirror mode, sync scope, folder exclude patterns, E2E encryption UI & remote re-encrypt
+- **Scheduled tool tasks** — Optional periodic duplicate / link checks (Tools)
+- **Tab sessions 2.0** — Save, restore, and sync named tab sessions
+- **Production build hardening** — Minification, no source maps, optional JS obfuscation for release ZIPs
+- **Chrome Web Store publish scripts** — `npm run publish:chrome`, local OAuth token flow
+
+### Improved
+
+- Tools panel reorganized into Health, Backup, Governance, Session, Platform groups
+- Duplicate detection 2.0 — URL normalization (tracking params, www)
+- Link checker 2.0 — Strictness levels, inconclusive handling, batch remove
+- i18n — Extended `en` / `zh_CN` strings for all new tools
+- macOS app parity (separate deliverable) — Tools tab, S3/E2E, merge preview, version history
+
+### Fixed
+
+- Sync guards — Delete protection blocks destructive download when local bookmarks exist
+- Read-only mode blocks remote uploads consistently
