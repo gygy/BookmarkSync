@@ -1,4 +1,4 @@
-# BookmarkSync v1.1.9 — Release notes
+# BookmarkSync v1.1.10 — Release notes
 
 ## English
 

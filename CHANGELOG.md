@@ -6,6 +6,16 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.10] - 2026-07-07
+
+### Fixed
+- **合并/下载在本地远少于云端时只上传或显示成功 0 条**：三方合并在本地为空或远小于云端时不再把云端书签当作「本地已删」而剪枝清空；增量写入支持无系统根文件夹包裹的远端树；远端计数为 0 时不再用上次成功同步数回填 UI；合并计划为空时禁止上传以免覆盖云端；下载计划有书签但本地写入 0 时记为失败；删除保护在云端多于本地时仍允许下载恢复。
+  - 扩展：`mergeBookmarks.ts`、`bookmarkTreeSync.ts`、`syncCounts.ts`、`syncSafety.ts`、`syncGuards.ts`、`background.ts`、`SyncHomePanel.tsx`、en/zh_CN i18n。
+  - **Mac 已对齐**：`BookmarkMerge.swift`（同等删除剪枝跳过规则）。
+
+### Changed
+- **备份策略文案简化**：缩短标签与频率选项，去掉每项下拉框下的重复说明；快照区说明一并收紧。12 语言 i18n + Mac `BackupPolicyPanel`。
+
 ## [1.1.9] - 2026-07-07
 
 ### Fixed
