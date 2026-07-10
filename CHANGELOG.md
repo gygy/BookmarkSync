@@ -6,6 +6,136 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.28] - 2026-07-10
+
+### Fixed
+- **合并数字口径自洽**：日志与差异弹窗同时展示「书签条数」（本地/云端/合并后）与「去重 URL」（共同/仅本地/仅远程），避免「共同 581、仅本地/仅远程 0」看起来与 583/584 矛盾；差异空态文案带入具体数字。
+  - 扩展：`mergeConflictStats.ts`、`bookmarkDiff.ts`、`BookmarkDiffDialog.tsx`、i18n。
+  - **Mac 部分对齐**：若 Mac 有合并摘要文案，需同步占位符顺序；本轮仅扩展。
+
+## [1.1.27] - 2026-07-10
+
+### Changed
+- **「合并同步」主卡片深度微调**：比 Logo 实心蓝略浅（约 78–88% accent 混白），白字图标，避免过淡。
+  - 扩展：`sync-home.css`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
+## [1.1.26] - 2026-07-10
+
+### Changed
+- **「合并同步」主卡片更淡**：由实心蓝改为浅蓝底 + 蓝色文字/图标，边框与阴影更轻，仍属 Logo 蓝色系。
+  - 扩展：`sync-home.css`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
+## [1.1.25] - 2026-07-10
+
+### Changed
+- **同步成功提示自动消失**：首页成功反馈约 4.5 秒后自动关闭；错误提示仍需手动关闭以便查看日志/快照。
+  - 扩展：`SyncHomePanel.tsx`。
+  - **Mac 无需对齐**（扩展 UI）。
+
+## [1.1.24] - 2026-07-10
+
+### Changed
+- **全界面品牌色统一为 Logo 蓝**：将紫/青绿装饰色、页面背景紫晕、本地/云端计数与流程图标、差异横幅与差异弹窗、工具健康数字等对齐 `--ms-accent`（`#0071e3`）；`--ms-purple`/`--ms-teal` 别名改为蓝色。错误/危险仍用红，语义成功按钮仍用绿。
+  - 扩展：`extensionTheme.css`、`sync-home.css`、`tools.css`、`BookmarkDiffDialog.tsx`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
+## [1.1.23] - 2026-07-10
+
+### Changed
+- **同步成功反馈条配色**：由翠绿改为与主题图标/强调色 `--ms-accent` 同一蓝色系（浅蓝底 + 蓝色勾选图标）。
+  - 扩展：`sync-home.css`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
+## [1.1.22] - 2026-07-10
+
+### Fixed
+- **「查看差异」无反应**：首页误发未注册的 `previewMergeDiff` 消息；改为既有后台 `previewMerge`，并在无有效预览时给出错误反馈。
+  - 扩展：`SyncHomePanel.tsx`。
+  - **Mac 无需对齐**（扩展消息名修复）。
+
+## [1.1.21] - 2026-07-10
+
+### Changed
+- **首页「合并同步」主按钮配色**：去掉紫→蓝渐变，改为与主题图标/强调色 `--ms-accent` 同一蓝色系的浅纵渐变与光晕，观感更自然。
+  - 扩展：`sync-home.css`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
+## [1.1.20] - 2026-07-10
+
+### Fixed
+- **消息通道提前关闭**：后台 `onMessage` 对同步/校验/快照等异步分支补全 `return true` 与错误回复；未知消息改为 `return false`；避免 `createSnapshot`/`restoreSnapshot`/`deleteSnapshot` 被重复处理，消除 Chrome「message channel closed before a response was received」控制台警告。
+  - 扩展：`background.ts`。
+  - **Mac 无需对齐**（浏览器扩展消息通道问题）。
+
+## [1.1.19] - 2026-07-10
+
+### Added
+- **Google Drive / OneDrive（Access Token）**：连接页可配置 Access Token 与文件名并测试连通；同步后端写入应用数据目录 / Graph；自动同步与通知按目标独立开关。
+  - 扩展：`googleDriveBackend`/`oneDriveBackend`、`verifySyncConfig`、options/popup 表单、权限请求、i18n。
+  - **Mac 未对齐**：仍为即将支持提示；需后续移植 Access Token 流程。
+
+### Changed
+- **策略页文案**：同步策略标签改为「策略」；专家区标题改为「高级设置」（`optionsTabSync` / `syncExpertSettingsTitle`）。
+
+## [1.1.18] - 2026-07-10
+
+### Added
+- **界面语言完整 12 语种**：语言选择器列出 zh_CN / zh_TW / en / ja / ko / de / fr / es / it / pt / ru / ar（`appLanguage_*` 键）；ja/ko/de/fr/es/it/pt/ru/ar 与 zh_TW 语言包补全为真实译文（非英文拷贝）。
+  - 扩展：`scripts/build-locale-translations.mjs`、`scripts/i18n-overrides/`、各 `_locales/*/messages.json`。
+  - **Mac 部分对齐**：`LanguageSettingsRow` 提供相同语言代码；运行时仍为中英双语（zh*→中文，其余→英文），完整 Mac 多语言待后续。
+
+## [1.1.17] - 2026-07-10
+
+### Changed
+- **同步 UX 澄清**：主页标签改为「同步」、原同步标签改为「自动与安全」；主操作文案改为「合并同步」；连接目标选择区分可用 / 即将支持；设置向导可测连通或合并一次后完成；专家选项与备份策略折叠；操作反馈更清晰。
+  - 扩展：`options.tsx`、`SyncHomePanel`/`SetupWizard`/`ManualSyncTargetPicker`、CSS、12 语言 i18n。
+  - **Mac 部分对齐**：同步标签文案、即将支持目标在选择器中禁用；未重写向导。
+
+## [1.1.16] - 2026-07-10
+
+### Added
+- **同步目标扩展**：新增 Gitee、GitLab 完整同步；Google Drive / OneDrive 出现在下拉中并标注「即将支持」（不可验证/同步）。
+  - 扩展：syncProvider、giteeBackend/gitlabBackend、连接面板、i18n、校验与远程快照；主页已去掉手动目标选择器（流程条仍显示当前目标）。
+  - **Mac 已对齐**：SyncProvider 枚举、连接表单、RemoteSyncService 上传/下载/校验；云盘为即将支持提示。远程快照归档与 iCloud 配置快照中的 Gitee/GitLab 字段为部分对齐。
+
+## [1.1.15] - 2026-07-10
+
+### Changed
+- **问题反馈去掉邮件入口**：帮助页与 Mac 仅保留 GitHub Issue。
+
+## [1.1.14] - 2026-07-10
+
+### Changed
+- **同步目标改为下拉选择**：主页、连接页、首次向导与 Mac 同步页由分段/芯片改为 `<select>` / 菜单式 Picker，便于后续扩展更多目标；选项仍来自 `ALL_SYNC_PROVIDERS`。
+  - 扩展：`ManualSyncTargetPicker.tsx`、`options.tsx`、`SetupWizard.tsx`、`SyncHomePanel.tsx`。
+  - **Mac 已对齐**：`SyncTargetPanel`、设置向导改用 `.pickerStyle(.menu)`。
+
+## [1.1.13] - 2026-07-10
+
+### Changed
+- **防误删阈值可配置**：默认仍为 30%，可在「高级同步」改为 1–90%；合并/下载按该比例判断是否中止。
+  - 扩展：`syncMassDeleteThreshold`、`mergeGuard.ts`、`options.tsx`、12 语言 i18n。
+  - **Mac 已对齐**：`SettingsStore`/`MergeGuard`/`MacFeatureViews`、iCloud 快照字段。
+
+## [1.1.12] - 2026-07-10
+
+### Added
+- **通用设置**：语言、主题、本机名称集中到「通用」标签；本机名称写入同步日志、最近同步状态与远程 JSON `deviceName`（默认如 `Chrome@Windows` / `Safari@Mac`）。
+  - 扩展：`uiPreferences.ts`、`options` General 标签、主题 CSS、`syncLogger`/`syncStatus`/`SyncDataInfo`。
+  - **Mac 已对齐**：通用区主题/本机名称、`SyncDataInfo.deviceName`、同步日志展示设备名、`preferredColorScheme`。
+
+## [1.1.11] - 2026-07-10
+
+### Added
+- **防误删保护（默认开启）**：合并或下载将删除超过约 30% 书签时自动中止；可在「高级同步」关闭。与「删除保护」（阻止下载覆盖）并存。
+  - 扩展：`mergeGuard.ts`（保留比例 70%）、`syncOrchestrator.ts`、`options.tsx`、`optionsDefaults`/`setting`、en/zh_CN i18n。
+  - **Mac 已对齐**：`MergeGuard.swift`、`SettingsStore`/`SettingsCloudStore`、`RemoteSyncService`/`AutoSyncService`/`BookmarkSyncApp`、`MacFeatureViews`。
+
+### Fixed
+- **合并前后计数不一致**：差异预览与正式合并共用三方基准与 `computeMergeConflictStats`；弹窗显示与首页一致的本地/云端条数；「合并后」与日志同口径（节点数）；顶栏/日志成功时显示实际写入数而非计划数；URL 相同但条数不一时不再误报「完全一致」。
+
 ## [1.1.10] - 2026-07-07
 
 ### Fixed
