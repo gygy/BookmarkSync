@@ -2,21 +2,21 @@
 
 **Cross-browser bookmark sync** — keep bookmarks in sync across Chrome, Firefox, Edge, and Safari using storage **you** control.
 
-Version **1.1.38**
+Version **1.1.42**
 
 [简体中文](README_cn.md)
 
 ---
 
-## What's new in v1.1.38
+## What's new in v1.1.42
 
 ```
-v1.1.36
+v1.1.42
 
-NEW: Diff viewer shows full URL, folder path, and highlighted extra copies when bookmark counts differ
-IMPROVED: Upload/download respond instantly with live progress; faster count updates after sync
-IMPROVED: Color palette, typography, and home UI polish (v1.1.33–1.1.35)
-FIXED: View differences opens detail dialog; merge stats align bookmark counts with unique URLs
+NEW: Optional Netscape HTML backup beside the sync file (on by default) for easy manual import
+NEW: Sync health strip — success/failure/stale/mismatch with one-click retry or merge
+NEW: Home shortcuts for tab sessions; weekly hygiene scan opt-in; profile switcher in settings
+IMPROVED: Diff viewer with full URL and folder paths; faster upload/download feedback; UI polish
 ```
 
 ---
@@ -32,7 +32,7 @@ BookmarkSync backs up and syncs your browser bookmarks to **your own** remote st
 - **WebDAV** — Nextcloud, Synology NAS, or any WebDAV folder  
 - **S3-compatible** — AWS S3, Cloudflare R2, MinIO  
 
-**Extension highlights (v1.1.38)**
+**Extension highlights (v1.1.42)**
 
 - **Tools hub** — health panel, duplicates, broken links, snapshots, merge preview, version history, tab sessions  
 - Optional **end-to-end encryption** for remote bookmark files  
@@ -177,9 +177,9 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 
 **Chrome:** Install from the [Chrome Web Store — BookmarkSync](https://chromewebstore.google.com/detail/mdilbiflbhofoeokchmohbkdbobbegab).
 
-For manual load (developer mode), get the latest packages (v1.1.38) from [dist/](dist/):
+For manual load (developer mode), get the latest packages (v1.1.42) from [dist/](dist/):
 
-- [BookmarkSync-1.1.38-chrome.zip](dist/BookmarkSync-1.1.38-chrome.zip)
+- [BookmarkSync-1.1.42-chrome.zip](dist/BookmarkSync-1.1.42-chrome.zip)
 
 Product screenshots: [screenshots/](screenshots/) (English at root, zh_CN/ for Chinese).
 

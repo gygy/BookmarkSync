@@ -6,6 +6,36 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.42] - 2026-07-11
+
+### Added
+- **同步 HTML 备份**：上传/合并成功后，在主同步文件旁额外写入 Netscape 格式 `.html`（如 `BookmarkSync.html`），便于在任意浏览器手工导入；设置中可关，**默认开启**。失败不影响 JSON 主同步。
+  - 扩展：`htmlRemoteBackup.ts`、`background.ts`、高级同步开关、i18n。
+  - **Mac 已对齐**：`SettingsStore` / `RemoteSyncService` / `MacFeatureViews`。
+
+## [1.1.41] - 2026-07-11
+
+### Added
+- **卫生扫描可发现**：首次向导可勾选「每周书签卫生扫描」（默认开、可关）；健康卡展示近期扫描摘要（重复组 / 失效链接）。
+- **Profiles 顶栏切换**：设置页标题栏可一键切换已保存的工作/个人等配置档。
+  - 扩展：`SetupWizard.tsx`、`SyncHealthCard.tsx`、`ProfileSwitcher.tsx`、`options.tsx`、i18n。
+  - **Mac 无需对齐**（Profiles / 工具调度为扩展独有）。
+
+## [1.1.40] - 2026-07-11
+
+### Added
+- **会话快捷入口**：同步首页可一键「保存窗口 / 恢复最近」标签页会话，无需进入工具页。
+- **差异 CTA 强化**：数量不一致时主按钮为「立即对齐」（合并），次要为「查看明细」。
+  - 扩展：`SyncHomePanel.tsx`、`sync-home.css`、i18n。
+  - **Mac 无需对齐**（标签页会话为扩展独有；Mac 差异查看器仍待做）。
+
+## [1.1.39] - 2026-07-11
+
+### Added
+- **同步健康一屏**：首页展示绿/黄/红健康状态（成功、失败、待同步、数量不一致、久未成功）；失败可一键重试，不一致/过期可一键合并；失败反馈保留日志与快照入口。
+  - 扩展：`syncHealthSummary.ts`、`SyncHealthCard.tsx`、`SyncHomePanel.tsx`、i18n。
+  - **Mac 尚未对齐**。
+
 ## [1.1.38] - 2026-07-11
 
 ### Changed
