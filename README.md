@@ -55,7 +55,7 @@ You can use the extension alone, the Mac app alone, or both — point them at th
 
 1. Install **BookmarkSync** from your browser’s extension store:  
    - [Chrome Web Store — BookmarkSync](https://chromewebstore.google.com/detail/mdilbiflbhofoeokchmohbkdbobbegab) (also works for Edge)  
-   - [Firefox Add-ons](https://addons.mozilla.org/)  
+   - [Firefox Add-ons — BookmarkSync](https://addons.mozilla.org/firefox/addon/bookmarksync-cloud-sync/)  
 2. Pin the extension icon to the toolbar for quick access.  
 3. Click the icon → **Settings** (gear) to connect your remote storage.
 
@@ -176,6 +176,8 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 ## Downloads
 
 **Chrome:** Install from the [Chrome Web Store — BookmarkSync](https://chromewebstore.google.com/detail/mdilbiflbhofoeokchmohbkdbobbegab).
+
+**Firefox:** Install from [Firefox Add-ons — BookmarkSync](https://addons.mozilla.org/firefox/addon/bookmarksync-cloud-sync/).
 
 For manual load (developer mode), get the latest packages (v1.1.42) from [dist/](dist/):
 
