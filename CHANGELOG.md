@@ -6,6 +6,20 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.38] - 2026-07-11
+
+### Changed
+- **排版与层级打磨**：说明文案统一 ≥12px；tertiary 对比加深；删除 10px 硬编码；引入 4px 间距网格；首页减少边框、强化主操作、弱化危险区与微标签。
+  - 扩展：`extensionTheme.css`、`sync-home.css`、`popup.css`、`options.css`。
+  - **Mac 无需对齐**（扩展 UI）。
+
+## [1.1.37] - 2026-07-11
+
+### Changed
+- **图标视觉升级**：重绘扩展与 macOS 主图标——多层蓝渐变、高光与暗角、书签层次阴影、云同步符号加粗，小尺寸（16px）仍清晰可辨。
+  - 扩展：`src/assets/icon.svg`、`icon.png`、`scripts/generate-extension-icons.mjs`。
+  - Mac：`macos/BookmarkSyncApp/Resources/AppIconSource.png`（与扩展同源矢量导出）。
+
 ## [1.1.36] - 2026-07-11
 
 ### Improved
