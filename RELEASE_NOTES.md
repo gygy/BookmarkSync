@@ -1,19 +1,19 @@
-# BookmarkSync v1.1.28 — Release notes
+# BookmarkSync v1.1.36 — Release notes
 
 ## English
 
-v1.1.28
+v1.1.36
 
-NEW: Google Drive & OneDrive sync via Access Token; Gitee and GitLab as sync targets
-IMPROVED: Home UI — logo-blue accents, softer merge button, auto-dismiss success toast, clearer strategy labels
-FIXED: “View differences” button; merge stats now show both bookmark counts and unique-URL stats so numbers stay consistent
-FIXED: Extension message channel closed before response (Chrome console warning)
+NEW: Diff viewer shows full URL, folder path, and highlighted extra copies when bookmark counts differ
+IMPROVED: Upload/download respond instantly with live progress; faster count updates after sync
+IMPROVED: Color palette, typography, and home UI polish (v1.1.33–1.1.35)
+FIXED: View differences opens detail dialog; merge stats align bookmark counts with unique URLs
 
 ## 中文
 
-v1.1.28
+v1.1.36
 
-新增：Google Drive / OneDrive（Access Token）同步；Gitee、GitLab 同步目标
-改进：首页配色对齐 Logo 蓝、合并同步按钮与成功提示体验；策略/高级设置文案更清晰
-修复：「查看差异」无反应；合并日志与差异弹窗同时标明书签条数与去重 URL，数字口径一致
-修复：后台消息通道提前关闭导致的 Chrome 控制台警告
+新增：条数不一致时差异弹窗列出完整链接、文件夹路径，并高亮多出的副本
+改进：上传/下载立即响应并显示阶段进度；同步后计数更新更快
+改进：配色、字体与首页体验优化（v1.1.33–1.1.35）
+修复：「查看差异」可打开明细；合并统计与差异弹窗条数口径一致

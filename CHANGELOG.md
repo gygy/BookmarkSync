@@ -6,6 +6,62 @@ All notable changes to BookmarkSync are documented here.
 
 （暂无）
 
+## [1.1.36] - 2026-07-11
+
+### Improved
+- **上传/下载响应加速**：手动上传、下载改为「立即响应 + 后台执行」；计数写入不再阻塞等待远端拉取；下载不再强制等待本地快照；合并基准与日志/通知改为后台写入。
+  - 扩展：`background.ts`、`syncOrchestrator.ts`、`SyncHomePanel.tsx`、`syncCounts.ts`、i18n。
+  - **Mac 尚未对齐**。
+
+## [1.1.35] - 2026-07-11
+
+### Improved
+- **条数差异明细**：「差异 N」场景下列出完整链接 URL；每份副本显示书签标题 + 文件夹路径（含书签栏/其他书签等根目录）；高亮标出本地/云端多出的副本。
+  - 扩展：`bookmarkDiff.ts`、`BookmarkDiffDialog.tsx`、`sync-home.css`、i18n。
+  - **Mac 尚未对齐**。
+
+## [1.1.34] - 2026-07-11
+
+### Added
+- **差异明细与处理**：当出现「差异 N」（尤其 URL 相同但条数不同）时，「查看差异」会列出具体链接及两端每一份副本的文件夹路径；弹窗内可直接「合并同步 / 上传对齐本地 / 下载对齐云端」。
+  - 扩展：`bookmarkDiff.ts`、`BookmarkDiffDialog.tsx`、`SyncHomePanel.tsx`、`sync-home.css`、i18n。
+  - **Mac 尚未对齐**（差异查看器仍为扩展独有，见 `MAC_EXTENSION_PARITY.md`）。
+
+## [1.1.33] - 2026-07-11
+
+### Changed
+- **颜色与搭配优化**：页面底改为冷灰蓝以抬升白卡片层次；边框/阴影略加强；强调色与分段选中态统一 Logo 蓝；语义色（成功/危险/警告）加深以保证对比；深色模式卡片与背景分层更清晰。
+  - 扩展：`extensionTheme.css`、`popup.css`。
+  - **Mac 无需对齐**（扩展 UI 配色）。
+
+## [1.1.32] - 2026-07-11
+
+### Changed
+- **字体与字号体验优化**：正文提升至 14px，说明/标签不低于 12px；收紧字距更适合中英混排；系统字体栈补齐 Windows 雅黑；次要文字对比度略加强；表单输入保持 ≥14px。
+  - 扩展：`extensionTheme.css`、`options.css`、`popup.css`、`tools.css`。
+  - **Mac 无需对齐**（扩展 UI 排版）。
+
+## [1.1.31] - 2026-07-11
+
+### Changed
+- **选项卡图标**：连接/策略/数据/工具/通用改用 Lucide 语义图标（云配置、滑杆、数据库、扳手、设置）；图标字形 16px、触控底 24px。
+  - 扩展：`options.tsx`、`options.css`。
+  - **Mac 无需对齐**（扩展 UI）。
+
+## [1.1.30] - 2026-07-11
+
+### Fixed
+- **设置页与主页窗口宽度不一致**：Popup 内嵌设置曾固定为 400px，现与主页同宽铺满（540px）；嵌入模式去掉多余边距限制。
+  - 扩展：`options.css`、`options.tsx`、`popup.css`。
+  - **Mac 无需对齐**（扩展 Popup UI）。
+
+## [1.1.29] - 2026-07-11
+
+### Changed
+- **界面图标与配色美化**：同步流程卡、上传/下载按钮、差异提示、成功反馈、选项卡与标题图标统一为 Logo 蓝软底圆角徽章；页头 Logo 增加淡蓝光晕。
+  - 扩展：`extensionTheme.css`、`sync-home.css`、`options.css`、`popup.css`。
+  - **Mac 无需对齐**（扩展 UI 样式）。
+
 ## [1.1.28] - 2026-07-10
 
 ### Fixed
