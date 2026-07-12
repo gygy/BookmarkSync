@@ -2,20 +2,20 @@
 
 **Cross-browser bookmark sync** — keep bookmarks in sync across Chrome, Firefox, Edge, and Safari using storage **you** control.
 
-Version **1.1.43**
+Version **1.1.44**
 
 [简体中文](README_cn.md)
 
 ---
 
-## What's new in v1.1.43
+## What's new in v1.1.44
 
 ```
-v1.1.43
+v1.1.44
 
-FIXED: Same bookmark URL in multiple folders is cloned on merge (no more "planned N, M not written" count gaps)
-NEW: Quick start can import a settings backup JSON to skip re-entering tokens
-IMPROVED: Connection test result in setup wizard is a clear success/error banner
+FIXED: Changing language in Settings → General applies immediately across the UI
+FIXED: Traditional Chinese sync status showed "$ minutes ago" instead of the real number
+IMPROVED: App language override covers options, popup, tools, wizard, and notifications
 ```
 
 ---
@@ -31,7 +31,7 @@ BookmarkSync backs up and syncs your browser bookmarks to **your own** remote st
 - **WebDAV** — Nextcloud, Synology NAS, or any WebDAV folder  
 - **S3-compatible** — AWS S3, Cloudflare R2, MinIO  
 
-**Extension highlights (v1.1.43)**
+**Extension highlights (v1.1.44)**
 
 - **Tools hub** — health panel, duplicates, broken links, snapshots, merge preview, version history, tab sessions  
 - Optional **end-to-end encryption** for remote bookmark files  
@@ -178,9 +178,9 @@ The Mac app offers the same sync actions for **Safari** bookmarks: upload, downl
 
 **Firefox:** Install from [Firefox Add-ons — BookmarkSync](https://addons.mozilla.org/firefox/addon/bookmarksync-cloud-sync/).
 
-For manual load (developer mode), get the latest packages (v1.1.43) from [dist/](dist/):
+For manual load (developer mode), get the latest packages (v1.1.44) from [dist/](dist/):
 
-- [BookmarkSync-1.1.43-chrome.zip](dist/BookmarkSync-1.1.43-chrome.zip)
+- [BookmarkSync-1.1.44-chrome.zip](dist/BookmarkSync-1.1.44-chrome.zip)
 
 Product screenshots: [screenshots/](screenshots/) (English at root, zh_CN/ for Chinese).
 
