@@ -4,6 +4,13 @@ All notable changes to BookmarkSync are documented here.
 
 ## [Unreleased]
 
+## [1.1.47] - 2026-07-14
+
+### Fixed
+- **Chrome 包剔除 `browser_specific_settings`**：该字段仅 Firefox/AMO 需要；写入 Chrome ZIP 后，桌面端常忽略，手机端 Chromium（如 Kiwi）会报「安装包损坏 / 无法识别的字段」。现仅在 `browser === 'firefox'` 时写入。
+  - 扩展：`wxt.config.ts`、`check-store-zip.mjs`。
+  - **Mac 无需对齐**。
+
 ## [1.1.46] - 2026-07-14
 
 ### Fixed
