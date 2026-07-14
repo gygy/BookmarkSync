@@ -1,13 +1,15 @@
-# BookmarkSync v1.1.45 — Release notes
+# BookmarkSync v1.1.46 — Release notes
 
 ## English
 
-v1.1.45
+v1.1.46
 
-FIXED: Store listing wording — removed keyword-heavy backend lists (Chrome policy)
+FIXED: Smart merge — moving a bookmark no longer empties both folders or leaves duplicates
+FIXED: Deleting a folder no longer comes back as an empty shell after auto-merge
 
 ## 中文
 
-v1.1.45
+v1.1.46
 
-修复：精简商店说明，去掉过多存储后端关键字罗列（符合 Chrome 政策）
+修复：智能合并时移动书签不再导致两边文件夹变空或残留重复
+修复：删除文件夹后不再被自动合并恢复成空文件夹

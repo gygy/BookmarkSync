@@ -4,6 +4,16 @@ All notable changes to BookmarkSync are documented here.
 
 ## [Unreleased]
 
+## [1.1.46] - 2026-07-14
+
+### Fixed
+- **智能合并：移动书签不再双端留空/双端重复；删除文件夹不再复活成空壳**（GitHub Issue #3）：三方合并不再仅按 URL 并集 + 同名文件夹递归，改为**路径索引**：
+  - 识别单侧相对基准的 **URL 移动**，只保留一侧归属；
+  - **文件夹路径**参与删除传播，避免已删文件夹被远端旧树灌回成空文件夹；
+  - 仍无基准时回退纯并集；本地空/远小于云端时保留恢复剪枝豁免。
+  - 扩展：`mergeBookmarks.ts`、`tests/mergeThreeWay.test.ts`。
+  - **Mac 已对齐**：`BookmarkMerge.swift`。
+
 ## [1.1.44] - 2026-07-12
 
 ### Fixed
